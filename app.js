@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
 dotenv.config();
-const sequelize = require("./db.config");
+const sequelize = require("./helper/db.config");
 const { userRouter } = require("./routes/user.route");
 const port = process.env.PORT || 3000;
 
