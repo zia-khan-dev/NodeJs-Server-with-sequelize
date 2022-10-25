@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const HttpStatus = require("../helper/statusCode");
 
 const maxAge = 60 * 60;
 
@@ -12,26 +13,43 @@ const createJWT = (id) => {
 
 const createUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { first_name, last_name, email, password, mobile_number, role } = req.body;
         let hashPassword;
         if (password) {
             const salt = await bcrypt.genSalt();
             hashPassword = await bcrypt.hash(password, salt);
         }
         const user = await User.create({
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
+            first_name ,
+            last_name,
+            email,
+            mobile_number,
             password: hashPassword,
-        });
-        res.status(201).send({
-            msg: "User created successfully",
+            role : (role ? role : 'user')
+        } );
+
+        res.status(HttpStatus.CREATED.code).send({
+            msg: `USER ${HttpStatus.CREATED.msg}`,
             user,
         });
     } catch (error) {
-        res.status(500).send({
-            msg: error.errors[0].message,
-        });
+        // const errobj = error.errors.map(e => console.log(e.message)) 
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(HttpStatus.BAD_REQUEST.code).json({
+              success: false,
+            //   msg: error.errors.map(e => e.message)
+              msg: error
+            }) 
+        }
+        else {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR.code).json({
+              success: false,
+            //   msg: error.errors.map(e => e.message)
+              msg: error
+            })
+        }
+        
+        
     }
 };
 
@@ -39,17 +57,18 @@ const getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll();
         users
-            ? res.status(200).send({
-                  msg: "All Users fetch successfully",
+            ? res.status(HttpStatus.OK.code).send({
+                  msg: `USER ${HttpStatus.OK.msg}`,
                   users,
               })
-            : res.status(200).send({
-                  msg: "User not found",
+            : res.status(HttpStatus.NOT_FOUND.code).send({
+                  msg: `USER ${HttpStatus.NOT_FOUND.msg}`,
                   users,
               });
     } catch (error) {
-        res.status(500).send({
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.code).send({
             msg: error.errors[0].message,
+
         });
     }
 };
@@ -63,17 +82,17 @@ const getUser = async (req, res) => {
             },
         });
         user
-            ? res.status(200).send({
-                  msg: "User fetch successfully",
+            ? res.status(HttpStatus.OK.code).send({
+                  msg: `USER ${HttpStatus.OK.msg}`,
                   user,
               })
-            : res.status(200).send({
-                  msg: "User not found",
+            : res.status(HttpStatus.NOT_FOUND.msg).send({
+                  msg: `USER ${HttpStatus.NOT_FOUND.msg}`,
                   user,
               });
     } catch (error) {
-        res.status(500).send({
-            msg: error.errors[0].message,
+        res.status(HttpStatus.OK.code).send({
+            msg : `USER ${HttpStatus.NOT_FOUND.msg}`
         });
     }
 };
@@ -88,16 +107,16 @@ const deleteUser = async (req, res) => {
         });
 
         userId
-            ? res.status(200).send({
-                  msg: "User deleted successfully",
+            ? res.status(HttpStatus.DELETED.code).send({
+                  msg: `USER ${HttpStatus.DELETED.msg}`,
                   userId,
               })
-            : res.status(200).send({
-                  msg: "User not found",
+            : res.status(HttpStatus.NOT_FOUND.code).send({
+                  msg: `USER ${HttpStatus.NOT_FOUND.msg}`,
                   userId: id,
               });
     } catch (error) {
-        res.status(500).send({
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.error).send({
             msg: "Invalid User Id",
         });
     }
@@ -106,7 +125,7 @@ const deleteUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, email, password } = req.body;
+        const { first_name, last_name, email, password, mobile_number } = req.body;
 
         let hashPassword;
         if (password) {
@@ -115,12 +134,12 @@ const updateUser = async (req, res) => {
         }
 
         const [user] = await User.update(
-            {
-                first_name: firstName,
-                last_name: lastName,
-                email: email,
-                password: hashPassword,
-            },
+           {
+            first_name ,
+            last_name,
+            email,
+            mobile_number,
+           },
             {
                 where: {
                     id,
@@ -128,17 +147,17 @@ const updateUser = async (req, res) => {
             }
         );
         user
-            ? res.status(200).send({
-                  msg: "User updated successfully",
+            ? res.status(HttpStatus.OK.code).send({
+                  msg: "USER UPDATED SUCCESSFULLY",
                   user,
               })
-            : res.status(200).send({
-                  msg: "User not found",
+            : res.status(HttpStatus.NOT_FOUND.code).send({
+                  msg: `USER ${HttpStatus.NOT_FOUND.msg}`,
                   userId: id,
               });
     } catch (error) {
-        res.status(500).send({
-            msg: "Invalid User Id",
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR.code).send({
+            msg: error,
         });
     }
 };
@@ -154,29 +173,34 @@ const userLogin = async (req, res) => {
         });
 
         if (user) {
+            const {id, role, first_name, last_name} = user;
             const auth = await bcrypt.compare(password, user.password);
             if (auth) {
-                const token = createJWT(user.id);
+                const token = createJWT({id,role,first_name, last_name});
                 res.cookie("token", token, {
                     maxAge: maxAge * 6000,
                 });
-                return res.status(200).json({
+                return res.status(HttpStatus.OK.code).json({
                     message: "User login successfully",
                     userId: user.id,
+                    first_name,
+                    last_name,
+                    role,
+                    token: token,
                 });
             }
 
-            return res.status(401).send({
+            return res.status(HttpStatus.UNAUTHORIZED.code).send({
                 msg: "Invalid user password",
             });
         }
     } else {
-        return res.status(400).send({
+        return res.status(HttpStatus.BAD_REQUEST.code).send({
             msg: "email or password not found",
         });
     }
 
-    res.status(500).send({
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR.code).send({
         msg: "User not found",
     });
 };
