@@ -13,43 +13,51 @@ const createJWT = (id) => {
 
 const createUser = async (req, res) => {
     try {
-        const { first_name, last_name, email, password, mobile_number, role } = req.body;
+        const {
+            first_name,
+            last_name,
+            email,
+            password,
+            mobile_number,
+            is_admin,
+            is_teacher,
+            is_staff,
+        } = req.body;
         let hashPassword;
         if (password) {
             const salt = await bcrypt.genSalt();
             hashPassword = await bcrypt.hash(password, salt);
         }
         const user = await User.create({
-            first_name ,
+            first_name,
             last_name,
             email,
             mobile_number,
             password: hashPassword,
-            role : (role ? role : 'user')
-        } );
+            is_admin,
+            is_teacher,
+            is_staff,
+        });
 
         res.status(HttpStatus.CREATED.code).send({
             msg: `USER ${HttpStatus.CREATED.msg}`,
             user,
         });
     } catch (error) {
-        // const errobj = error.errors.map(e => console.log(e.message)) 
-        if (error.name === 'SequelizeValidationError') {
+        // const errobj = error.errors.map(e => console.log(e.message))
+        if (error.name === "SequelizeValidationError") {
             return res.status(HttpStatus.BAD_REQUEST.code).json({
-              success: false,
-            //   msg: error.errors.map(e => e.message)
-              msg: error
-            }) 
-        }
-        else {
+                success: false,
+                //   msg: error.errors.map(e => e.message)
+                msg: error,
+            });
+        } else {
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR.code).json({
-              success: false,
-            //   msg: error.errors.map(e => e.message)
-              msg: error
-            })
+                success: false,
+                //   msg: error.errors.map(e => e.message)
+                msg: error,
+            });
         }
-        
-        
     }
 };
 
@@ -68,7 +76,6 @@ const getAllUsers = async (req, res) => {
     } catch (error) {
         res.status(HttpStatus.INTERNAL_SERVER_ERROR.code).send({
             msg: error.errors[0].message,
-
         });
     }
 };
@@ -92,7 +99,7 @@ const getUser = async (req, res) => {
               });
     } catch (error) {
         res.status(HttpStatus.OK.code).send({
-            msg : `USER ${HttpStatus.NOT_FOUND.msg}`
+            msg: `USER ${HttpStatus.NOT_FOUND.msg}`,
         });
     }
 };
@@ -125,7 +132,16 @@ const deleteUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { first_name, last_name, email, password, mobile_number } = req.body;
+        const {
+            first_name,
+            last_name,
+            email,
+            password,
+            mobile_number,
+            is_admin,
+            is_teacher,
+            is_staff,
+        } = req.body;
 
         let hashPassword;
         if (password) {
@@ -134,12 +150,16 @@ const updateUser = async (req, res) => {
         }
 
         const [user] = await User.update(
-           {
-            first_name ,
-            last_name,
-            email,
-            mobile_number,
-           },
+            {
+                first_name,
+                last_name,
+                email,
+                password,
+                mobile_number,
+                is_admin,
+                is_teacher,
+                is_staff,
+            },
             {
                 where: {
                     id,
@@ -173,10 +193,10 @@ const userLogin = async (req, res) => {
         });
 
         if (user) {
-            const {id, role, first_name, last_name} = user;
+            const { id, role, first_name, last_name } = user;
             const auth = await bcrypt.compare(password, user.password);
             if (auth) {
-                const token = createJWT({id,role,first_name, last_name});
+                const token = createJWT(id);
                 res.cookie("token", token, {
                     maxAge: maxAge * 6000,
                 });

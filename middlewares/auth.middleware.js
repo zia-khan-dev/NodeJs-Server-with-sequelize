@@ -9,6 +9,8 @@ const requireAuth = (req, res, next) => {
                 res.clearCookie("token");
                 res.status(400).json(err.message);
             } else {
+                res.locals.decodedToken = decodedToken;
+                console.log("dddd", decodedToken);
                 next();
             }
         });

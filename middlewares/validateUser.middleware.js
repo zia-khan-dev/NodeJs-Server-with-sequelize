@@ -13,13 +13,15 @@ const schema = Joi.object({
             new RegExp("(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])")
         ),
     mobile_number: Joi.string().required(),
-    role: Joi.string(),
+    is_admin: Joi.boolean().required(),
+    is_teacher: Joi.boolean().required(),
+    is_staff: Joi.boolean().required(),
 });
 
-const validate = (req, res, next) => {
+const validateUser = (req, res, next) => {
     const { error } = schema.validate(req.body);
     if (error) {
-        if (error.details[0].type == 'string.pattern.base') {
+        if (error.details[0].type == "string.pattern.base") {
             return res.status(HttpStatus.BAD_REQUEST.code).send({
                 msg: "Password mush have 1 special character, one upper & lower case character, one number and 8 to 12 character length",
             });
@@ -28,7 +30,7 @@ const validate = (req, res, next) => {
             msg: error.message,
         });
     }
-    next()
-}
+    next();
+};
 
-module.exports = validate;
+module.exports = validateUser;
