@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../helper/db.config");
 
-const PostMedia = sequelize.define("post_media", {
+const StoryMedia = sequelize.define("story_media", {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -15,4 +15,4 @@ const PostMedia = sequelize.define("post_media", {
 });
 
 
-module.exports = PostMedia;
+module.exports = StoryMedia;

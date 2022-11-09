@@ -7,6 +7,7 @@ dotenv.config();
 const sequelize = require("./helper/db.config");
 const { userRouter } = require("./routes/user.route");
 const { postRouter } = require("./routes/userPost.route");
+const { storyRouter } = require("./routes/userStory.route");
 const port = process.env.PORT || 3000;
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(cookieParser());
 
 app.use("/user", userRouter);
 app.use("/post", postRouter);
+app.use("/story", storyRouter);
 
 sequelize
     .authenticate()

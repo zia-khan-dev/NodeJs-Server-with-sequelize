@@ -2,34 +2,33 @@ const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const HttpStatus = require("../helper/statusCode");
-const UserPost = require("../models/userPost.model");
-const PostMedia = require("../models/postMedia.model");
+const StoryMedia = require("../models/storyMedia.model");
+const UserStory = require("../models/userStory.model");
 
-const createPost = async (req, res) => {
+const createStory = async (req, res) => {
     try {
         const id = res.locals.decodedToken.id;
-        const postData = req.body;
-        postData["userId"] = id;
+        const storyData = req.body;
+        storyData["userId"] = id;
 
-        const post = await UserPost.create(req.body);
+        const story = await UserStory.create(req.body);
 
-        const postMedias = [];
+        const storyMedias = [];
         await Promise.all(
             req.files.map(async (media) => {
-                media["postId"] = post.id;
+                media["storyId"] = story.id;
                 media["link"] = media.path;
-                const postMedia = await PostMedia.create(media);
-                postMedias.push(postMedia.dataValues);
+                const storyMedia = await StoryMedia.create(media);
+                storyMedias.push(storyMedia.dataValues);
             })
         );
-        post.dataValues["media"] = postMedias;
+        story.dataValues["media"] = storyMedias;
 
         res.status(HttpStatus.CREATED.code).send({
-            msg: `Post ${HttpStatus.CREATED.msg}`,
-            post,
+            msg: `Story ${HttpStatus.CREATED.msg}`,
+            story,
         });
     } catch (error) {
-        console.log(error);
         if (error.name === "SequelizeValidationError") {
             return res.status(HttpStatus.BAD_REQUEST.code).json({
                 success: false,
@@ -44,19 +43,19 @@ const createPost = async (req, res) => {
     }
 };
 
-const getAllPosts = async (req, res) => {
+const getAllStories = async (req, res) => {
     try {
-        const posts = await UserPost.findAll({
-            include: PostMedia,
+        const stories = await UserStory.findAll({
+            include: StoryMedia,
         });
-        posts
+        stories
             ? res.status(HttpStatus.OK.code).send({
-                  msg: `Post ${HttpStatus.OK.msg}`,
-                  posts,
+                  msg: `Stories ${HttpStatus.OK.msg}`,
+                  stories,
               })
             : res.status(HttpStatus.NOT_FOUND.code).send({
-                  msg: `Post ${HttpStatus.NOT_FOUND.msg}`,
-                  posts,
+                  msg: `Stories ${HttpStatus.NOT_FOUND.msg}`,
+                  stories,
               });
     } catch (error) {
         res.status(HttpStatus.INTERNAL_SERVER_ERROR.code).send({
@@ -65,64 +64,63 @@ const getAllPosts = async (req, res) => {
     }
 };
 
-const getPost = async (req, res) => {
+const getStory = async (req, res) => {
     try {
         const { id } = req.params;
-        const post = await UserPost.findOne({
+        const story = await UserStory.findOne({
             where: {
                 id,
             },
         });
-        post
+        story
             ? res.status(HttpStatus.OK.code).send({
-                  msg: `Post ${HttpStatus.OK.msg}`,
-                  post,
+                  msg: `Story ${HttpStatus.OK.msg}`,
+                  story,
               })
             : res.status(HttpStatus.NOT_FOUND.msg).send({
-                  msg: `Post ${HttpStatus.NOT_FOUND.msg}`,
-                  post,
+                  msg: `Story ${HttpStatus.NOT_FOUND.msg}`,
+                  story,
               });
     } catch (error) {
         res.status(HttpStatus.OK.code).send({
-            msg: `Post ${HttpStatus.NOT_FOUND.msg}`,
+            msg: `Story ${HttpStatus.NOT_FOUND.msg}`,
         });
     }
 };
 
-const deletePost = async (req, res) => {
+const deleteStory = async (req, res) => {
     try {
         const { id } = req.params;
-        const postId = await UserPost.destroy({
+        const storyId = await UserStory.destroy({
             where: {
                 id,
             },
         });
 
-        postId
+        storyId
             ? res.status(HttpStatus.OK.code).send({
-                  msg: `Post ${HttpStatus.DELETED.msg}`,
-                  userId: postId,
+                  msg: `Story ${HttpStatus.DELETED.msg}`,
+                  storyId: storyId,
               })
             : res.status(HttpStatus.NOT_FOUND.code).send({
-                  msg: `Post ${HttpStatus.NOT_FOUND.msg}`,
-                  userId: id,
+                  msg: `Story ${HttpStatus.NOT_FOUND.msg}`,
+                  storyId: id,
               });
     } catch (error) {
         res.status(HttpStatus.INTERNAL_SERVER_ERROR.error).send({
-            msg: "Invalid Post Id",
+            msg: "Invalid Story Id",
         });
     }
 };
 
-// const updatePost = async (req, res) => {
+// const updateStory = async (req, res) => {
 //     try {
 //         const { id } = req.params;
 //         const {
-//             title,
-//             media
+//             title
 //         } = req.body;
 
-//           const postMedias = [];
+//           const storyMedias = [];
 //           await Promise.all(
 //               media.map(async (media) => {
 //                   media["postId"] = post.id;
@@ -162,8 +160,8 @@ const deletePost = async (req, res) => {
 // };
 
 module.exports = {
-    createPost,
-    getAllPosts,
-    getPost,
-    deletePost,
+    createStory,
+    getAllStories,
+    getStory,
+    deleteStory,
 };

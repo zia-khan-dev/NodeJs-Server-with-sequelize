@@ -6,7 +6,7 @@ const schema = Joi.object({
     media: Joi.required(),
 });
 
-const validatePost = (req, res) => {
+const validateStory = (req, res) => {
     console.log(req.files[0]);
     const { error } = schema.validate({
         title: req.body.title,
@@ -22,4 +22,4 @@ const validatePost = (req, res) => {
     return true;
 };
 
-module.exports = validatePost;
+module.exports = validateStory;
