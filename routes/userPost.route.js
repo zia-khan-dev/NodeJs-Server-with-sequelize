@@ -5,7 +5,7 @@ const fileUpload = require("../middlewares/fileUpload.middleware");
 
 const postRouter = express.Router();
 
-postRouter.route("/create-post").post(requireAuth, fileUpload, post.createPost);
+postRouter.route("/create").post(requireAuth, fileUpload, post.createPost);
 postRouter.route("/").get(requireAuth, post.getAllPosts);
 
 postRouter

@@ -7,10 +7,16 @@ const schema = Joi.object({
 });
 
 const validatePost = (req, res) => {
-    console.log(req.files[0]);
+    // console.log(req.files[0]);
+    const isFilesExist = () => {
+        if (req.files) {
+        return true
+        }
+        return false;
+    }
     const { error } = schema.validate({
         title: req.body.title,
-        media: req.files[0],
+        media: isFilesExist()
     });
     console.log(error);
     if (error) {
