@@ -8,8 +8,13 @@ const uuid = require("uuid").v4;
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         let uploadLocation = `uploads${req.baseUrl}`;
-        console.log("dfsd", uploadLocation);
-
+        console.log("dfsd", file);
+        if (
+            !file.mimetype.includes("image") &&
+            !file.mimetype.includes("video")
+        ) {
+            return cb(new Error("File format doesn't supported"));
+        }
         cb(null, uploadLocation);
     },
     filename: function (req, file, cb) {
@@ -43,23 +48,10 @@ const fileUpload = (req, res, next) => {
             } else if (err) {
                 return res.status(HttpStatus.FILE_UPLOAD_ERROR.code).send({
                     success: false,
-                    msg: "An error occured during file uploading",
+                    msg: err.message,
                 });
-            } else {
-                const filterFile = req.files.filter(
-                    (file) =>
-                        file.mimetype.split("/")[0] != "image" &&
-                        file.mimetype.split("/")[0] != "video"
-                );
-
-                if (filterFile.length != 0) {
-                    return res.status(HttpStatus.FILE_UPLOAD_ERROR.code).send({
-                        success: false,
-                        msg: "File format doesn't supported",
-                    });
-                }
-                next();
             }
+            next();
         }
     });
 };

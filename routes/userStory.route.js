@@ -5,7 +5,7 @@ const fileUpload = require("../middlewares/fileUpload.middleware");
 
 const storyRouter = express.Router();
 
-storyRouter.route("/create-story").post(requireAuth, fileUpload, story.createStory);
+storyRouter.route("/create").post(requireAuth, fileUpload, story.createStory);
 storyRouter.route("/").get(requireAuth, story.getAllStories);
 
 storyRouter
