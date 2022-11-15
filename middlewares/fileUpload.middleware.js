@@ -1,6 +1,7 @@
 const { array } = require("joi");
 const multer = require("multer");
 const HttpStatus = require("../helper/statusCode");
+// const {userPostValidator} = require("../validators/post.validators")
 const validatePost = require("./validatePost.middleware");
 const validateStory = require("./validateStory.middleware");
 const uuid = require("uuid").v4;
@@ -8,7 +9,7 @@ const uuid = require("uuid").v4;
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         let uploadLocation = `uploads${req.baseUrl}`;
-        console.log("dfsd", file);
+        console.log("file", file);
         if (
             !file.mimetype.includes("image") &&
             !file.mimetype.includes("video")

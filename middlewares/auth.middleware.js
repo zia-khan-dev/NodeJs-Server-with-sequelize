@@ -1,20 +1,36 @@
 const jwt = require("jsonwebtoken");
+const { HttpStatus } = require("../helper/statusCode");
+const Response = require("../helper/response");
+const User = require("../models/user/User.model");
+
 
 const requireAuth = (req, res, next) => {
-    const token = req.cookies.token;
+    const authHeader = req.headers['authorization']
+    const profileActive = req.headers['profile']
+    const token = authHeader && authHeader.split(' ')[1]
+
     if (token) {
-        jwt.verify(token, process.env.SECRETKEY, (err, decodedToken) => {
+        jwt.verify(token, process.env.SECRETKEY, async (err, user) => {
             if (err) {
-                console.log("token err", err.message);
-                res.clearCookie("token");
-                res.status(400).json(err.message);
+                console.log("Token error: ", err.message);
+                res.status(HttpStatus.BAD_REQUEST.code).send(
+                    new Response(false, err.message));
+
             } else {
-                res.locals.decodedToken = decodedToken;
+                req.user = user;
+                if (profileActive != user.id) {
+                    reqProfile = await User.findOne({ where: { id: profileActive, parent_id: user.id } });
+                    req.profileActive = reqProfile.id;
+                } else {
+                    req.profileActive = profileActive;
+                }
                 next();
             }
         });
     } else {
-        res.status(401).json("Authentication failed");
+        res.status(HttpStatus.UNAUTHORIZED.code).send(
+            new Response(false, `YOU ARE ${HttpStatus.UNAUTHORIZED.message} TO ACCESS THIS`));
+
     }
 };
 

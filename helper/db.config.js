@@ -4,13 +4,13 @@ const mysql = require("mysql2");
 //create Database if does not exists
 const createDB = () => {
     const connection = mysql.createConnection({
-        host: process.env.CONNECTIONURL,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
     });
 
     connection.query(
-        `CREATE DATABASE IF NOT EXISTS ${process.env.DATABASENAME}`,
+        `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`,
         (err, result) => {
             if (err) {
                 console.log(err);
@@ -26,12 +26,12 @@ const createDB = () => {
 createDB();
 
 const sequelize = new Sequelize(
-    process.env.DATABASENAME,
-    process.env.USER,
-    process.env.PASSWORD,
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
     {
-        host: process.env.CONNECTIONURL,
-        dialect: "mysql",
+        host: process.env.DB_HOST,
+        dialect: process.env.DIALECT,
     }
 );
 
