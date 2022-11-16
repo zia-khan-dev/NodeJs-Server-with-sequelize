@@ -12,7 +12,9 @@ const { userRouter,
 } = require("./routes/user.route");
 
 const {
-    userPostRouter, commentRouter, postReactionRouter, commentReactionRouter } = require("./routes/post.route");
+    userPostRouter, commentRouter,
+    postReactionRouter, commentReactionRouter,
+    userStoryRouter } = require("./routes/post.route");
 
 const {
     interestRouter } = require("./routes/master.route");
@@ -40,6 +42,7 @@ app.use("/post", requireAuth, userPostRouter);
 app.use("/post/reaction", requireAuth, postReactionRouter);
 app.use("/post/comment", requireAuth, commentRouter);
 app.use("/post/comment/reaction", requireAuth, commentReactionRouter);
+app.use("/story", requireAuth, userStoryRouter);
 sequelize
     .authenticate()
     .then(() => {
